@@ -1,0 +1,3 @@
+git remote add origin https://github.com/zhims/templete_for_szuer.git
+git branch -M main
+git push -u origin mai

@@ -1,0 +1,353 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Author:Yao Zhang  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Email: jaafar_zhang@163.com  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc} 
+\usepackage[table]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage[left=2.50cm, right=1.50cm, top=2.0cm, bottom=2.50cm]{geometry}
+\usepackage{xcolor,url,cite}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,amscd,multirow,booktabs,fullpage,calc,multicol}
+\usepackage{lastpage,enumitem,fancyhdr,mathrsfs,wrapfig,setspace,cancel,amsmath,empheq,framed}
+\usepackage[retainorgcmds]{IEEEtrantools}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\newlength{\tabcont}
+\setlength{\parindent}{0.0in}
+\setlength{\parskip}{0.05in}
+\colorlet{shadecolor}{orange!15}
+\parindent 0in
+\parskip 12pt
+\geometry{margin=1in, headsep=0.25in}
+\usepackage{subfig,graphicx,framed}
+\graphicspath{ {img/} }
+\usepackage{multirow, tabularx}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{exercise}{Exercise}[section]
+\newtheorem{note}{Note}[section]
+\newtheorem{notation}{Notation}
+\newtheorem{lemma}{Lemma}[subsection]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{homework}{Homework}[section]
+\newtheorem{summary}{Summary}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem*{remark}{Remark}
+\makeatletter
+\@addtoreset{equation}{section}
+\makeatother
+\renewcommand{\theequation}{\arabic{section}.\arabic{equation}}
+\usepackage[colorlinks,linkcolor=blue, anchorcolor=green,citecolor=red, urlcolor=blue]{hyperref}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\beginrefs{\begin{list}%
+		{[\arabic{equation}]}{\usecounter{equation}
+			\setlength{\leftmargin}{0.8truecm}\setlength{\labelsep}{0.4truecm}%
+			\setlength{\labelwidth}{1.6truecm}}}
+	\def\endrefs{\end{list}}
+\def\bibentry#1{\item[\hbox{[#1]}]}
+
+\def\UrlBreaks{\do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J
+	\do\K\do\L\do\M\do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V
+	\do\W\do\X\do\Y\do\Z\do\[\do\\\do\]\do\^\do\_\do\`\do\a\do\b
+	\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n
+	\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z
+	\do\.\do\@\do\\\do\/\do\!\do\_\do\|\do\;\do\>\do\]\do\)\do\,
+	\do\?\do\'\do+\do\=\do\#}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}  % Use Input in the format of Algorithm
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+	
+\setcounter{section}{1}
+\title{title}
+\thispagestyle{empty}
+
+\begin{center}
+	{\Large K--SVD: An Algorithm for Designing Overcomplete Dictionaries for Sparse Representation}\\
+	\vspace{0.25cm}
+	{Yao Zhang}
+\end{center}
+
+\subsection{Introduction}
+We assume that the vector $ \boldsymbol{x} $ is sparse, i.e. there are only a few non-zeros.  
+
+\begin{definition}[spare representation of signal]	
+	Let $ \boldsymbol{y} \in \mathbb{R}^{n \times 1} $ be an observed signal. Let $ D \in \mathbb{R}^{n\times K} $ be a dictionary. Let $ \boldsymbol{x} \in \mathbb{R}^{K \times 1} $ be the representation coefficients. In the absence of noise. we assume
+	\begin{equation}
+	\boldsymbol{y} = D \boldsymbol{x}.
+	\end{equation}
+	More precisely, if $D = \left[ {\boldsymbol{d}_1},...,{{\boldsymbol{d}_K}} \right]$, where $ \boldsymbol{d}_{k} \in \mathbb{R}^{n\times 1} $, are the basis vectors, then 
+		\begin{equation}
+		\boldsymbol{y} = \sum\limits_{k = 1}^K {{x_k}{\boldsymbol{d}_k}} 
+		\end{equation}
+\end{definition}
+
+Suppose we have $\left\{ {{\boldsymbol{y}_1},...,{\boldsymbol{y}_N}} \right\}$ observations share a common dictionary $ D $ and is known to have spare representations. How to design $ D $ ?
+
+Our problem is:
+
+\begin{equation}
+\mathop {\min }\limits_{X,D} \;{\left\| {{\boldsymbol{x}_i}} \right\|_0}\;\;\;s.t.\;\;DX = Y
+\label{eq1.3}
+\end{equation}
+
+where $Y = \left[ {{\boldsymbol{y}_1},...,{\boldsymbol{y}_N}} \right]$($ \boldsymbol{y}_i \in \mathbb{R}^{n\times 1} $) is the collection of $ N $ observations, and $X = \left[ {{\boldsymbol{x}_1},...,{\boldsymbol{x}_N}} \right]$($ \boldsymbol{x}_i \in \mathbb{R}^{K\times 1} $) is the collection of $ N $ representation coefficient vectors. 
+
+\begin{remark}
+	Eq \ref{eq1.3} is not convex, and in reality, there is always noise and so $DX \approx Y$.
+\end{remark}
+
+Therefore, 
+\begin{equation}
+\mathop {\min }\limits_{X,D} \;\left\| {DX - Y} \right\|_F^2\;\;s.t.\;\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} \leqslant T
+\label{eq1.4}
+\end{equation}
+
+Solve the problem \ref{eq1.4} using alternating minimization:
+\begin{enumerate}
+	\item update the sparse coding: ${X^{k + 1}} = \mathop {\min }\limits_X \left\| {{D^{\left( k \right)}}X - Y} \right\|_F^2\;\;s.t.\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} \leqslant T$
+	\item update the dictionary: ${D^{k + 1}} = \mathop {\min }\limits_D \left\| {D{X^{\left( {k + 1} \right)}} - Y} \right\|_F^2\;\;$
+\end{enumerate}
+
+%\begin{center}
+%	\Large Solutions
+%\end{center}
+%\vspace{-1cm}
+\subsection{K-Means} 
+
+\begin{remark}
+	$ K $ is from $ D \in \mathbb{R}^{n\times K} $, means is from average, respectively.
+\end{remark}
+
+\begin{center}
+	\Large Sparse coding
+\end{center}
+
+\vspace{-0.5cm}
+
+Suppose we have a dictionary $ D $. For now let us assume that $ D $ is known and fixed. Suppose we want to fire one and only column(denote $ k $). How should we do it?
+
+\begin{enumerate}
+	\item For the $ i $-th observation $ \boldsymbol{y}_{i} (i=1,...,N) $, we should select column $ k $ if
+	\begin{equation}
+	\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_k}} \right\|_2^2 \leqslant \left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_j}} \right\|_2^2
+	\end{equation}
+	for $ j \ne k $, where $ \boldsymbol{e}_{k} = \left[ {\begin{matrix}
+		0  \\ 
+		0  \\ 
+		\vdots   \\ 
+		0  \\ 
+		1  \\ 
+		0  \\ 
+		\vdots   \\ 
+		0  \\ 
+		
+		\end{matrix} } \right] $ is the standard basis.
+	\item Repeat the same process for all $ i = 1,..., N $. The each $ \boldsymbol{y}_{i} $ will have its own closest column and we can  partition the indices $\left\{ {1,...,N} \right\}$ into at most $ K $ groups $ R_{1},...,R_{k} $:
+	\begin{equation}
+	{R_k} = \left\{ {i:\;\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_k}} \right\|_2^2 \leqslant \;\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_j}} \right\|_2^2,\;j \ne k} \right\}
+	\end{equation}
+\end{enumerate}
+
+\begin{center}
+	\Large Dictionary Update
+\end{center}
+
+\vspace{-0.5cm}
+
+Now, once the observations $ \boldsymbol{y}_{1},...,\boldsymbol{y}_{N} $ are grouped into $ K $ groups specified by $ R_{1},...,R_{K} $, how can we update the dictionary $ D $?
+
+\begin{enumerate}
+	\item Replace the column by the mean of observations in the group:
+	\begin{equation}
+	{\boldsymbol{d}_k} = \frac{1}{{\left| {{R_k}} \right|}}\sum\limits_{i \in {R_k}} {{\boldsymbol{y}_i}} 
+	\end{equation}
+	Why? See Theorem \ref{thm1.1}. 
+	\item After that, go back to the sparse coding step. Stop until stopping criteria is met.
+\end{enumerate}
+
+\begin{theorem}
+	K-Means is equivalent to
+	\begin{equation}
+	\mathop {\min }\limits_{D,X} \left\| {Y - DX} \right\|_F^2\;\;s.t.\;\forall i,\exists k,\;{\boldsymbol{x}_i} = {\boldsymbol{e}_k}
+	\end{equation} 
+	where $\;Y = \left[ {{\boldsymbol{y}_1},...,{\boldsymbol{y}_N}} \right] \in {\mathbb{R}^{n \times N}},X = \left[ {{\boldsymbol{x}_1},...,{\boldsymbol{x}_N}} \right] \in {\mathbb{R}^{K \times N}}$
+	\label{thm1.1}
+\end{theorem}
+
+\begin{proof}
+	\text{}
+	\begin{enumerate}
+		\item Given $ D $, if we can only fire one column(denote $ k $), then the solution has to satisfy 
+		\begin{equation}
+		\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_k}} \right\|_2^2 \leqslant \left\| {{\boldsymbol{y}_i} - D{\boldsymbol{e}_j}} \right\|_2^2
+		\end{equation}
+		\item Given $ X $, we can separate the sum-square into $ K $ groups of individual terms. Each will take the form
+		\begin{equation}
+		\mathop {\min }\limits_{{\boldsymbol{d}_k}} \sum\limits_{i \in {R_k}} {\left\| {{\boldsymbol{y}_i} - {\boldsymbol{d}_k}} \right\|_2^2} 
+		\label{eq1.7}
+		\end{equation}
+		The optimal solution of \ref{eq1.7} is the average of ${\left\{ {{\boldsymbol{y}_i}} \right\}_{i \in {R_k}}}$
+	\end{enumerate}
+\end{proof}
+\subsection{K-SVD}
+
+\begin{remark}
+	$ K $ is from $ D \in \mathbb{R}^{n\times K} $, SVD is from rank 1 decomposition, respectively.
+\end{remark}
+
+
+In fact, K-Means
+
+\begin{equation}
+\mathop {\min }\limits_{D,X} \;\left\| {Y - DX} \right\|_F^2\;s.t.\;\forall i,\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} = 1
+\end{equation}
+
+Now, K-SVD:
+
+\begin{equation}
+\mathop {\min }\limits_{D,X} \;\left\| {Y - DX} \right\|_F^2\;s.t.\;\forall i,\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} \le  T
+\end{equation}
+
+\begin{enumerate}
+	\item Sparse Coding
+	
+	Fix $ D $, solve $ X $ in 
+	\begin{equation}
+	\mathop {\min }\limits_X \;\left\| {Y - DX} \right\|_F^2\;s.t.\;\forall i,\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} \le T
+	\end{equation}
+	Note that
+	\begin{equation}
+	\left\| {Y - DX} \right\|_F^2 = \sum\limits_{i = 1}^N {\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{x}_i}} \right\|_2^2} 
+	\end{equation}
+	Why do this?
+	
+	Thus, we only need to solve 
+	
+	\begin{equation}
+	\mathop {\min }\limits_{{\boldsymbol{x}_i}} \;\left\| {{\boldsymbol{y}_i} - D{\boldsymbol{x}_i}} \right\|_2^2s.t.\;\forall i,\;{\left\| {{\boldsymbol{x}_i}} \right\|_0} \leqslant T
+	\end{equation}
+	
+	This can be done using OMP, or any other algorithm along the same vein. 
+	\item Dictionary Update
+	
+	Now, assume $ X $ is fixed. Suppose we want to update $ D $.
+	
+	Can we solve this?
+	
+	\begin{equation}
+	\mathop {\min }\limits_D \;\left\| {DX - Y} \right\|_F^2
+	\end{equation}
+	
+	If we solve for $ D $ in this way, i.e.
+	
+	\begin{equation}
+	D = Y{X^T}{\left( {X{X^T}} \right)^{ - 1}}
+	\end{equation}
+	
+	But, there are drawback in this method
+	\begin{enumerate}
+		\item $ X \in \mathbb{R}^{K\times N}, $ so $ XX^{T} \in \mathbb{R}^{K\times K} $, Inversion is hard for large K.
+		\item There is no way of preserving sparsity inherent from $ X $. 
+	\end{enumerate}
+	
+	Can we update the $ k $-th column of $ D $ while fixing the others?
+	
+	We know that (let $ \boldsymbol{x}^{i} $ be the $ j $-th row, and $ \boldsymbol{x}_{j} $ be the $ j $-th column)
+	
+	\begin{equation}
+	Y \approx \left[ {\underbrace {{\boldsymbol{d}_1}}_{ \in {\mathbb{R}^{n \times 1}}},...,{\boldsymbol{d}_K}} \right]\left[ {\begin{matrix}
+		{\underbrace {{\boldsymbol{x}^1}}_{ \in {\mathbb{R}^{1 \times N}}}}  \\ 
+		\vdots   \\ 
+		{{\boldsymbol{x}^K}}  \\ 
+		
+		\end{matrix} } \right] \in {\mathbb{R}^{n \times N}}
+	\end{equation}
+	
+	then 
+	\begin{equation}
+	\begin{split}
+	\left\| {Y - DX} \right\|_F^2  & \\
+	= & \left\| {Y - \sum\limits_{j = 1}^k {{\boldsymbol{d}_j}{\boldsymbol{x}^j}} } \right\|_F^2 = \left\| {\left( {Y - \sum\limits_{j = 1,j \ne k}^k {{\boldsymbol{d}_j}{\boldsymbol{x}^j}} } \right) - {\boldsymbol{d}_k}{\boldsymbol{x}^k}} \right\|_F^2 \triangleq \left\| {{E_k} - {\boldsymbol{d}_k}{\boldsymbol{x}^k}} \right\|_F^2
+	\end{split}
+	\end{equation}
+	
+	Therefore, since $ E_{k} $ is fixed, finding $\left( {{\boldsymbol{d}_k},{\boldsymbol{x}^k}} \right)$ is the same as finding the best rank-1 update of $ E_{k} $.
+	
+	To find $\left( {{\boldsymbol{d}_k},{\boldsymbol{x}^k}} \right)$  such that
+	
+	\begin{equation}
+	\mathop {\min }\limits_{{\boldsymbol{d}_k},{\boldsymbol{x}^k}} \left\| {{E_k} - {\boldsymbol{d}_k}{\boldsymbol{x}^k}} \right\|_F^2
+	\end{equation}
+	
+	Not quite! We also need to preserve sparsity of $ \boldsymbol{x}^{k} $.
+	
+	Then, let us restrict ourselves to the existing non-zeros of $ \boldsymbol{x}^{k} $. Define 
+	\begin{equation}
+	{\omega _k} = \left\{ {i:{\boldsymbol{x}^k}\left[ i \right] \ne 0} \right\}
+	\end{equation}
+	
+	and $ {\omega _k} $ be an  $n \times \left| {{\omega _k}} \right|$ matrix representing the sampling operator. Find rank-1 approximation for
+	
+	\begin{equation}
+	\mathop {\min }\limits_{{\boldsymbol{d}_k},{\boldsymbol{x}^k}} \;\left\| {{E_k}{\Omega _k} - {\boldsymbol{d}_k}{\boldsymbol{x}^k}{\Omega _k}} \right\|_F^2
+	\label{eq1.12}
+	\end{equation}
+	
+	Let $E_k^R \triangleq {E_k}{\Omega _k},$ then \ref{eq1.12} can be solved by doing SVD on $ E_k^R $:
+	
+	\begin{equation}
+	E_k^R = U\Sigma {V^T}
+	\end{equation}
+	
+	Then
+	\begin{enumerate}
+		\item $ \boldsymbol{d}_{k} =$  the first column of $ U $ 
+		\item ${\boldsymbol{x}^k}{\Omega _k}=$ the first row of $ V \times \Sigma(1,1)$. Fill $ \boldsymbol{x}^{k}[i] $ with zero for $ i \notin \omega_k $
+		\item Repeat the process for $ k = 1,...,K $
+	\end{enumerate}
+\end{enumerate}
+
+Suppose the sparse coding is prefect. Then the dictionary update:
+\begin{enumerate}
+	\item guarantees reduction or no charge of $\left\| {Y - DX} \right\|_F^2$
+	\item guarantees sparsity of $ X $ is unchanged
+\end{enumerate}
+
+However,
+\begin{enumerate}
+	\item Since the sparse coding step may not be perfect, convergence is not guaranteed i general
+	\item When $ T $ is small, OMP has worst case guarantee. Even for moderate $ T $, OMP can still work under high probability (with some assumptions on the signal)
+	\item Practically, K-SVD works reasonably well (but slow)
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Acknowledge}
+
+We would like to thank Dr. Stanley Chan for help with the description of the big picture of K-SVD. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{References} 
+\beginrefs
+\bibentry{1}{M. Aharon, M. Elad and A. Bruckstein}, 
+``K-SVD: An algorithm for designing overcomplete dictionaries for sparse representation,''
+{\it IEEE Transactions on Signal Processing },
+2006, Vol.~54(11), pp.~4311--4322.
+%\bibentry{2}{ A. Friedman }, 
+%``Foundations of Modern Analysis.''
+\endrefs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+
+              
